@@ -68,14 +68,7 @@ def eml_to_list(my_eml):
                         d["過往公司"] = ",".join(sub_list[count+1:])
                 coll.append(d)
             return coll
-
-# 開啟即將寫入的 csv
-with open('output.csv', 'w', newline='') as csvfile:
-  # 定義欄位
-  fieldnames = ['姓名', '性別', '年齡','聯絡電話','教育程度','職務類別','工作經驗累計年資','累計經驗','過往公司']
-writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-writer.writeheader()
-
+        
 # eml 擋存放目錄
 mypath = "emls"
 
@@ -83,7 +76,12 @@ mypath = "emls"
 files = listdir(mypath)
 
 # 讀擋並處理轉換 csv
-for file in files:
+for count , file in enumerate(files):
+    fieldnames = ['姓名', '性別', '年齡','聯絡電話','電子郵件','聯絡地址','教育程度','求職類別','累計年資','累計經驗','過往公司']
     result = eml_to_list(file)
-    for i in result:
-        writer.writerow(i)
+    with open('output.csv', 'a', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if count == 0:
+            writer.writeheader()
+        for i in result:
+            writer.writerow(i)

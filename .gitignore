@@ -6,3 +6,5 @@ myoutput2.txt
 decode2.py
 eml*.py
 pretty.py
+.DS_Store
+*.csv
