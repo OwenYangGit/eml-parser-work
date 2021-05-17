@@ -71,15 +71,16 @@ def eml_to_list(my_eml):
         
 # eml 擋存放目錄
 mypath = "emls"
+myoutput = "output.csv"
+fieldnames = ['姓名', '性別', '年齡','聯絡電話','電子郵件','聯絡地址','教育程度','求職類別','累計年資','累計經驗','過往公司']
 
 # 取的目錄下所有 eml 擋存入 list
 files = listdir(mypath)
 
 # 讀擋並處理轉換 csv
 for count , file in enumerate(files):
-    fieldnames = ['姓名', '性別', '年齡','聯絡電話','電子郵件','聯絡地址','教育程度','求職類別','累計年資','累計經驗','過往公司']
     result = eml_to_list(file)
-    with open('output.csv', 'a', newline='') as csvfile:
+    with open(myoutput, 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if count == 0:
             writer.writeheader()
