@@ -1,5 +1,8 @@
 *.eml
 *.html
 list2.txt
+myoutput1.txt
+myoutput2.txt
 decode2.py
-eml-read.py
+eml*.py
+pretty.py
