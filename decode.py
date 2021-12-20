@@ -79,7 +79,7 @@ files = listdir(mypath)
 
 # 讀擋並處理轉換 csv
 for count , file in enumerate(files):
-    result = eml_to_list(file)
+    result = eml_to_list(mypath + "/" + file)
     with open(myoutput, 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         if count == 0:

@@ -8,3 +8,11 @@ eml*.py
 pretty.py
 .DS_Store
 *.csv
+.vscode
+Lib
+Scripts
+pyvenv.cfg
+dist
+build
+__pycache__
+decode.spec
