@@ -1,0 +1,6 @@
+get-dev-cred.json
+*.json
+*.eml
+*.zip
+*.html
+__pycache__
