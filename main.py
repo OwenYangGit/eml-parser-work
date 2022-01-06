@@ -1,5 +1,7 @@
 # [START functions_helloworld_storage]
 from google.cloud import storage
+
+import utils
 def hello_gcs(event, context):
     
     """Background Cloud Function to be triggered by Cloud Storage.
@@ -27,12 +29,30 @@ def hello_gcs(event, context):
 # [END functions_helloworld_storage]
 
 # Must export GOOGLE_APPLICATION_CREDENTIALS
-gcs_client = storage.Client()
-result = gcs_client.list_buckets()
-for b in result:
-    print(b)
-    print(type(b))
+# gcs_client = storage.Client()
+# result = gcs_client.list_buckets()
+# for b in result:
+#     print(b)
+#     print(type(b))
 
-from utils import unzip
+#from utils import unzip
 
-unzip.unzip("20211230.zip")
+#unzip.unzip("20211230.zip")
+
+from utils import parser
+"""
+讀取單檔 eml
+"""
+result = parser.eml_to_textpart("emls/0.eml")
+result2 = parser.textpart_split_by_candidate(result)
+ls = []
+for i in result2:
+    ls.append(i.replace("\r\n",","))
+
+for i,e in enumerate(ls):
+    if i == 1:
+        print(e)
+
+
+#for i, e in enumerate(result2):
+ #   print(e)

@@ -48,7 +48,7 @@ def eml_to_json(my_eml):  # my_eml 是要讀取 (解析) 的 .eml 檔案
                 for count , record in enumerate(sub_list):  # 每一個元素給予標號
                     print(count, record)
                     d["platform"] = "1111"
-                    if "代碼" in record:   # 以下皆為將資料放到 d 字典裏面                        
+                    if "代碼" in record:   # 以下皆為將資料放到 d 字典裏面                  
                         if "(９大職能星測評)" in record:
                             d["id"] = record.split("代碼")[1].split("(９大職能星測評)")[0]
                         else:

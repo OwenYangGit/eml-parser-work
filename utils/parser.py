@@ -3,6 +3,60 @@
 """
 from flanker import mime
 from bs4 import BeautifulSoup
+import re
+
+def eml_to_textpart(eml_path: str) -> str:
+    """將 multi-part 種類的 eml 擷取出 text/plain 並將格式做一個簡單清洗然後以 str 返回
+    
+    :type eml_path: str
+    :param eml_path 傳入 lcoal 的 eml 單一檔案路徑
+
+    :type str
+    :return 回傳整個 eml 內的 text/plain 部分，這個 str 會有 multi-line 的特性
+
+    :流程
+    將 eml 讀取
+    讀取 eml 的 part
+    判斷為 text/plain part
+    使用正則將所有的 space(空白) 取代成單一 space(空白)
+    將多 empty lines 換成單一 empty line
+    將 unicode \u3000(全形空白) 移除
+    """
+    with open(eml_path, "rb") as eml:
+        raw_data = eml.read()
+    email = mime.from_string(raw_data)
+    for p in email.parts:
+        if p.content_type == "text/plain":
+            text_format = re.sub(" +"," ",p.body)
+            result = re.sub(r'(\n\s*)+\n+', '\n', text_format).replace(u'\u3000',u'').replace(u' ▍',u'').replace(u'●',u'')
+            return result
+    
+def textpart_split_by_candidate(multi_line_textpart: str) -> list:
+    """eml 可能有多個人，將清洗過的 eml text/plain 字段傳入，拆分所有人放入 list 返回
+
+    :type multi_line_textpart: str
+    :param multi_line_textpart: 經過 eml_to_textpart 方法清洗過的多行 str
+    
+    :type: list
+    :return 返回拆分 eml 不同人選過後的人選清單
+
+    :流程
+    先將多行的 str 以換行轉成 list
+    遍歷這個 list , 以 "最後修改" 關鍵字做條件拆分
+    拆分過後的個人資料需保留成字串 , 各行改用逗號切割 , 做為日後需要轉換用的條件字符
+    一個人做為一筆字串 , 塞入一個 list , 理論上 eml 裡面有幾個人 , 這個 list 就有幾個 element
+    返回 list
+    """
+    textpart_list = multi_line_textpart.split("最後修改")
+    persons = []
+    for e in textpart_list:
+        persons.append(e.replace("\r\n",",")[:-1])
+    return persons
+
+
+
+
+
 
 def eml_to_html(eml_path: str) -> str:
     """
