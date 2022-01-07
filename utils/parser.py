@@ -41,20 +41,67 @@ def textpart_split_by_candidate(multi_line_textpart: str) -> list:
     :return 返回拆分 eml 不同人選過後的人選清單
 
     :流程
-    先將多行的 str 以換行轉成 list
-    遍歷這個 list , 以 "最後修改" 關鍵字做條件拆分
-    拆分過後的個人資料需保留成字串 , 各行改用逗號切割 , 做為日後需要轉換用的條件字符
-    一個人做為一筆字串 , 塞入一個 list , 理論上 eml 裡面有幾個人 , 這個 list 就有幾個 element
-    返回 list
+    先將多行的 str 以以 "最後修改" 關鍵字轉成 textpart_list
+    遍歷這個 textpart_list , 將換行字符(\r\n)以 ',' 取代，並移除該字串最後 2 個 character(為了移除多的 ',')
+    一個人做為一筆字串 , 塞入一個 persons , 理論上 eml 裡面有幾個人 , 這個 persons 就有幾個 element
+    移除 persons 的第一個 element(1111 固定的資料，無用)
+    返回 persons
     """
     textpart_list = multi_line_textpart.split("最後修改")
     persons = []
     for e in textpart_list:
-        persons.append(e.replace("\r\n",",")[:-1])
+        persons.append(e.replace("\r\n",",")[:-2])
+    persons.pop(0)
     return persons
 
+def erase_messy_data_from_candidate(candidate_text: str) -> list:
+    """將獨立一段 str 的 candidate str 傳入，透過判斷字段，將所需資料保留並存入 list 返回
+    
+    :type candidate_text: str
+    :param candidate_text: 傳入經過初步處理的單一個 candidate 字串，來源格式可以參考至 textpart_split_by_candidate 方法清洗出來後的 list 中任一 element
+    
+    :type list
+    :return 返回 list，裡面存放該 candidate 的有效資訊，例如姓名、電話、學歷經歷等等
 
-
+    :流程
+    先將整個 str 透過 ',' 做為切割字符轉成 candidate_list
+    遍歷整個 list 將有效資訊的資料作保留，存入一個 candidate_info_list
+    返回 candidate_info_list
+    """
+    candidate_list = candidate_text.split(",")
+    candidate_info_list = []
+    for i in candidate_list:
+        if "代碼" in i:
+            candidate_info_list.append(i)
+        elif "歲" in i:
+            candidate_info_list.append(i)
+        elif "電話" in i:
+            candidate_info_list.append(i)
+        elif "郵件" in i:
+            candidate_info_list.append(i)
+        elif "聯絡地址" in i:
+            candidate_info_list.append(i)
+        elif "教育程度" in i:
+            candidate_info_list.append(i)
+        elif "求職條件" in i:
+            candidate_info_list.append(i)
+        elif "期望產業" in i:
+            candidate_info_list.append(i)
+        elif "地點" in i:
+            candidate_info_list.append(i)
+        elif "工作經驗" in i:
+            candidate_info_list.append(i)
+        elif "年" in i:
+            candidate_info_list.append(i)
+        elif "月" in i:
+            candidate_info_list.append(i)
+        elif "專長" in i:
+            candidate_info_list.append(i)
+        elif "打字速度" in i:
+            candidate_info_list.append(i)
+    return candidate_info_list
+        
+    
 
 
 

@@ -43,16 +43,7 @@ from utils import parser
 """
 讀取單檔 eml
 """
-result = parser.eml_to_textpart("emls/0.eml")
+result = parser.eml_to_textpart("emls/1.eml")
 result2 = parser.textpart_split_by_candidate(result)
-ls = []
-for i in result2:
-    ls.append(i.replace("\r\n",","))
-
-for i,e in enumerate(ls):
-    if i == 1:
-        print(e)
-
-
-#for i, e in enumerate(result2):
- #   print(e)
+result3 = parser.erase_messy_data_from_candidate(result2[1])
+print(result3)
