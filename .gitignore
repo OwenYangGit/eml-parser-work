@@ -4,3 +4,4 @@ get-dev-cred.json
 *.zip
 *.html
 __pycache__
+test*
