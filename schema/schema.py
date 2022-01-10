@@ -20,7 +20,7 @@ bq_schema = [
     bigquery.SchemaField("cell_phone", "STRING"),
     bigquery.SchemaField("gender", "STRING"),
     bigquery.SchemaField("age", "INTEGER"),
-    bigquery.SchemaField("working_months", "STRING"),
+    bigquery.SchemaField("working_months", "INTEGER"),
     bigquery.SchemaField("email", "STRING"),
     bigquery.SchemaField("name", "STRING"),
     bigquery.SchemaField("languages", "RECORD", mode="REPEATED", fields=(bigquery.SchemaField("write", "STRING"), bigquery.SchemaField("read", "STRING"), bigquery.SchemaField("listen", "STRING"), bigquery.SchemaField("speak", "STRING"), bigquery.SchemaField("language", "STRING"))),

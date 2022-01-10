@@ -97,15 +97,46 @@ def eml_processor_func(event, context):
     print("工作完成")
 
 
-# 本地測試
-# test_folder = "eml_output/"
-# eml_files = listdir("eml_output")
+#本地測試
 
-# with open("myoutput.json", "a", encoding="utf-8") as fout:
-#     for eml in eml_files:
-#         a = parser.eml_to_textpart(test_folder + eml)
-#         b = parser.textpart_split_by_candidate(a)
-#         for i in b:
-#             d = parser.candidate_dict_from_list(parser.erase_messy_data_from_candidate_text(i))
-#             json.dump(d, fout, ensure_ascii=False)
-#             fout.write("\n")
+test_folder = "eml_output/"
+eml_files = listdir("eml_output")
+
+with open("myoutput.json", "a", encoding="utf-8") as fout:
+    for eml in eml_files:
+        a = parser.eml_to_textpart(test_folder + eml)
+        b = parser.textpart_split_by_candidate(a)
+        for i in b:
+            d = parser.candidate_dict_from_list(parser.erase_messy_data_from_candidate_text(i))
+            json.dump(d, fout, ensure_ascii=False)
+            fout.write("\n")
+
+from schema import schema
+import os 
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/workspaces/eml-parser-work/sa.json'
+
+bq_dataset = "user_bi_ds"
+bq_table = "user_bi_table"
+
+client = bigquery.Client()
+dataset_ref = client.dataset(bq_dataset)
+table_ref = dataset_ref.table(bq_table)
+
+job_config = bigquery.LoadJobConfig()
+job_config.schema = schema.bq_schema
+job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
+
+uri = "gs://user-bi-data-bucket/candidates-jsonl-data/1111.json"
+
+load_job = client.load_table_from_uri(
+    uri,
+    table_ref,
+    location="US",  # Must match the destination dataset location.
+    job_config=job_config,
+)  # Make an API request.
+
+load_job.result()  # Waits for the job to complete.
+
+destination_table = client.get_table(bq_table)
+print("Loaded {} rows.".format(destination_table.num_rows))

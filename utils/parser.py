@@ -192,7 +192,7 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
                 work_range = re.search("[0-9]+\~[0-9]+",e).group(0)
                 # print(work_range)
                 work_min_year = int(work_range.split("~")[0]) # 取得最小年份
-                candidate_dict["working_years"] = work_min_year * 12
+                candidate_dict["working_months"] = work_min_year * 12
             elif "累計經驗" in e or "累計經驗" in e:
                 work_exp_list = e.replace("累計經驗","").strip().split("|")
                 candidate_dict["work_experiences"] = []
@@ -269,6 +269,9 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
     candidate_dict.setdefault("edu_status","無")
     candidate_dict.setdefault("edu_school","無")
     candidate_dict.setdefault("edu_department","無")
+
+    # 工作月數
+    candidate_dict.setdefault("working_months",999)
 
     # 工作年資
     candidate_dict.setdefault("work_experiences",[
