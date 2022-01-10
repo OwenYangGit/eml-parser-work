@@ -116,126 +116,128 @@ def erase_messy_data_from_candidate_text(candidate_text: str) -> list:
     return candidate_info_list
 
 def candidate_dict_from_list(candidate_list: list) -> dict:
-        """將 erase_messy_data_from_candidate 輸出的單一 candidate list 洗成 dict，並給予對應欄位名稱
-        
-        :參數
-            :type candidate_list: list
-            :param candidate_list 從 erase_messy_data_from_candidate 清洗過後出來的資料，是一個 list , 裡面僅有單一 candidate 的資訊
-
-        :返回
-            :type dict
-            :return 返回單一 candidate_dict，內容為一位 candidate 對應的 key:value，該欄位參考 雲育鏈實習生/002/002_Model
+    """將 erase_messy_data_from_candidate 輸出的單一 candidate list 洗成 dict，並給予對應欄位名稱
     
-        :流程
-            創建一個空 candidate_dict 的 dict
-            創建一個空的 work_experience_data 的 list
-            遍歷整個傳入的 candidate_list
-            依照資料特殊關鍵字做判斷，處理對應的資料後，存入 candidate_dict 呼應的 key:value
-            將對應的 key 與字段結合生成該 candidate 的 candidate_dict
-            判斷過程中，若資料內不包含特定關鍵字(理論上是把只有 "年" or "月" 這兩個關鍵字)，視為工作經歷，將這些資料塞進 work_experience_data 的 list
-            遍歷整個 work_experience_data，處理每個 element 的資料，並塞入對應的 candidate_dict["work_experience_list"] 的 list 內
-            判斷所有 candidate_dict 每個欄位的 key 都有 value，若沒有，則塞入預設值
-            返回 candidate_dict
-        """
-        candidate_dict = {}
-        work_experience_data = []
-        try:
-            for e in candidate_list:
-                if "代碼" in e:
-                    candidate_dict["id"] = e.split(" ")[2]
-                    candidate_dict["name"] = e.split(" ")[0]
-                elif "歲" in e:
-                    if "男" in e:
-                        candidate_dict["gender"] = "男"
-                    elif "女" in e:
-                        candidate_dict["gender"] = "女"
-                    else:
-                        candidate_dict["gender"] = "多元性別"
-                    age = int(e.split("|")[1].strip().split("歲")[0])
-                    candidate_dict["age"] = age
-                elif "聯絡電話" in e:
-                    cell_phone_list = e.replace("聯絡電話","").replace(" ","").split("|")
-                    candidate_dict["cell_phone"] = []
-                    for phone in cell_phone_list:
-                        candidate_dict["cell_phone"].append(phone)
-                elif "電子郵件" in e:
-                    candidate_dict["email"] = e.split("電子郵件")[1].strip()
-                elif "聯絡地址" in e:
-                    candidate_dict["address"] = e.split("聯絡地址")[1].strip()
-                elif "教育程度" in e:
-                    edu_list = e.split(" ")
-                    candidate_dict["edu_level"] = edu_list[0][4:-2]
-                    candidate_dict["edu_status"] = edu_list[0][-2:]
-                    candidate_dict["edu_school"] = edu_list[1] + edu_list[2]
-                    candidate_dict["edu_department"] = edu_list[3].replace("(","").replace(")","")
-                elif "職務類別" in e:
-                    wanted_job_title_list = e.replace("，","").strip().split(" ")
-                    candidate_dict["wanted_job_title"] = []
-                    for i, title in enumerate(wanted_job_title_list):
-                        if i >= 1:
-                            candidate_dict["wanted_job_title"].append(title)
-                elif "期望產業" in e:
-                    wanted_job_type_list = e.replace("，","").strip().split(" ")
-                    candidate_dict["wanted_job_type"] = []
-                    for i, type in enumerate(wanted_job_type_list):
-                        if i >= 1:
-                            candidate_dict["wanted_job_type"].append(type)
-                elif "上班地點" in e:
-                    wanted_job_locations_list = e.replace("，","").strip().split(" ")
-                    candidate_dict["wanted_job_locations"] = []
-                    for i, location in enumerate(wanted_job_locations_list):
-                        if i >= 1:
-                            candidate_dict["wanted_job_locations"].append(location)
-                elif "工作經驗" in e:
-                    work_range = re.search("[0-9]+\~[0-9]+",e).group(0)
-                    # print(work_range)
-                    work_min_year = int(work_range.split("~")[0]) # 取得最小年份
-                    candidate_dict["working_years"] = work_min_year * 12
-                elif "累計經驗" in e or "累計經驗" in e:
-                    work_exp_list = e.replace("累計經驗","").strip().split("|")
-                    candidate_dict["work_experiences"] = []
-                    for i in work_exp_list:
-                        work_range = re.search("[0-9]+\~[0-9]+",i)
-                        if work_range:
-                            data = i.strip().split(" ")
-                            candidate_dict["work_experiences"].append({
-                                "title": data[0].strip(),
-                                "duration": data[1].strip()
-                            })
-                        else:
-                            candidate_dict["work_experiences"].append({
-                                "title": i.strip(),
-                                "duration": "無"
-                            })
-                elif "語文專長" in e:                
-                    langs_list = e.replace(" ","").split("[") # 將空白字符刪除，以 [ 作為切割字符
-                    langs_list.pop(0) # 去除第一個無用的 element
-                    candidate_dict["languages"] = []
-                    for i in langs_list:
-                        lang = i.split("]")[0]
-                        listen = i.split("|")[0][5:]
-                        speak = i.split("|")[1][2:]
-                        read = i.split("|")[2][2:]
-                        write = i.split("|")[3][2:]
-                        candidate_dict["languages"].append(
-                            {
-                                "language": lang,
-                                "listen": listen,
-                                "speak": speak,
-                                "read": read,
-                                "write": write
-                            }
-                        )
-                elif "電腦專長" in e:
-                    candidate_dict["computer_expertise"] = []
-                    computer_expertise_list = e.replace("、","").strip().split(" ")
-                    computer_expertise_list.pop(0) # 去除第一個無用的 element
-                    for i in computer_expertise_list:
-                        candidate_dict["computer_expertise"].append(i)
+    :參數
+        :type candidate_list: list
+        :param candidate_list 從 erase_messy_data_from_candidate 清洗過後出來的資料，是一個 list , 裡面僅有單一 candidate 的資訊
+
+    :返回
+        :type dict
+        :return 返回單一 candidate_dict，內容為一位 candidate 對應的 key:value，該欄位參考 雲育鏈實習生/002/002_Model
+
+    :流程
+        創建一個空 candidate_dict 的 dict
+        創建一個空的 work_experience_data 的 list
+        遍歷整個傳入的 candidate_list
+        依照資料特殊關鍵字做判斷，處理對應的資料後，存入 candidate_dict 呼應的 key:value
+        將對應的 key 與字段結合生成該 candidate 的 candidate_dict
+        判斷過程中，若資料內不包含特定關鍵字(理論上是把只有 "年" or "月" 這兩個關鍵字)，視為工作經歷，將這些資料塞進 work_experience_data 的 list
+        遍歷整個 work_experience_data，處理每個 element 的資料，並塞入對應的 candidate_dict["work_experience_list"] 的 list 內
+        判斷所有 candidate_dict 每個欄位的 key 都有 value，若沒有，則塞入預設值
+        返回 candidate_dict
+    """
+    candidate_dict = {}
+    work_experience_data = []
+    try:
+        for e in candidate_list:
+            if "代碼" in e:
+                candidate_dict["id"] = e.split(" ")[2]
+                candidate_dict["name"] = e.split(" ")[0]
+            elif "歲" in e:
+                if "男" in e:
+                    candidate_dict["gender"] = "男"
+                elif "女" in e:
+                    candidate_dict["gender"] = "女"
                 else:
-                    work_experience_data.append(e.strip())
-        except Exception as err:
-            print(err)
+                    candidate_dict["gender"] = "多元性別"
+                age = int(e.split("|")[1].strip().split("歲")[0])
+                candidate_dict["age"] = age
+            elif "聯絡電話" in e:
+                cell_phone_list = e.replace("聯絡電話","").replace(" ","").split("|")
+                #candidate_dict["cell_phone"] = []
+                for phone in cell_phone_list:
+                    if phone.startswith("09"):
+                        candidate_dict["cell_phone"] = phone
+                        #candidate_dict["cell_phone"].append(phone)
+            elif "電子郵件" in e:
+                candidate_dict["email"] = e.split("電子郵件")[1].strip()
+            elif "聯絡地址" in e:
+                candidate_dict["address"] = e.split("聯絡地址")[1].strip()
+            elif "教育程度" in e:
+                edu_list = e.split(" ")
+                candidate_dict["edu_level"] = edu_list[0][4:-2]
+                candidate_dict["edu_status"] = edu_list[0][-2:]
+                candidate_dict["edu_school"] = edu_list[1] + edu_list[2]
+                candidate_dict["edu_department"] = edu_list[3].replace("(","").replace(")","")
+            elif "職務類別" in e:
+                wanted_job_title_list = e.replace("，","").strip().split(" ")
+                candidate_dict["wanted_job_title"] = []
+                for i, title in enumerate(wanted_job_title_list):
+                    if i >= 1:
+                        candidate_dict["wanted_job_title"].append(title)
+            elif "期望產業" in e:
+                wanted_job_type_list = e.replace("，","").strip().split(" ")
+                candidate_dict["wanted_job_type"] = []
+                for i, job_type in enumerate(wanted_job_type_list):
+                    if i >= 1:
+                        candidate_dict["wanted_job_type"].append(job_type)
+            elif "上班地點" in e:
+                wanted_job_locations_list = e.replace("，","").strip().split(" ")
+                candidate_dict["wanted_job_locations"] = []
+                for i, location in enumerate(wanted_job_locations_list):
+                    if i >= 1:
+                        candidate_dict["wanted_job_locations"].append(location)
+            elif "工作經驗" in e:
+                work_range = re.search("[0-9]+\~[0-9]+",e).group(0)
+                # print(work_range)
+                work_min_year = int(work_range.split("~")[0]) # 取得最小年份
+                candidate_dict["working_years"] = work_min_year * 12
+            elif "累計經驗" in e or "累計經驗" in e:
+                work_exp_list = e.replace("累計經驗","").strip().split("|")
+                candidate_dict["work_experiences"] = []
+                for i in work_exp_list:
+                    work_range = re.search("[0-9]+\~[0-9]+",i)
+                    if work_range:
+                        data = i.strip().split(" ")
+                        candidate_dict["work_experiences"].append({
+                            "title": data[0].strip(),
+                            "duration": data[1].strip()
+                        })
+                    else:
+                        candidate_dict["work_experiences"].append({
+                            "title": i.strip(),
+                            "duration": "無"
+                        })
+            elif "語文專長" in e:                
+                langs_list = e.replace(" ","").split("[") # 將空白字符刪除，以 [ 作為切割字符
+                langs_list.pop(0) # 去除第一個無用的 element
+                candidate_dict["languages"] = []
+                for i in langs_list:
+                    lang = i.split("]")[0]
+                    listen = i.split("|")[0][5:]
+                    speak = i.split("|")[1][2:]
+                    read = i.split("|")[2][2:]
+                    write = i.split("|")[3][2:]
+                    candidate_dict["languages"].append(
+                        {
+                            "language": lang,
+                            "listen": listen,
+                            "speak": speak,
+                            "read": read,
+                            "write": write
+                        }
+                    )
+            elif "電腦專長" in e:
+                candidate_dict["computer_expertise"] = []
+                computer_expertise_list = e.replace("、","").strip().split(" ")
+                computer_expertise_list.pop(0) # 去除第一個無用的 element
+                for i in computer_expertise_list:
+                    candidate_dict["computer_expertise"].append(i)
+            else:
+                work_experience_data.append(e.strip())
+    except Exception as err:
+        print(err)
             
         # 處理 work_experience_list 欄位
         try:
@@ -260,44 +262,44 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
         except Exception as err:
             print(err)
         
-        # 最後要判斷哪些 key 不存在，不存在要給預設值，暫時根據提供的文件非必填值做參考 -> "學歷/工作經歷/語言專長/電腦專長"都可能為空
-        
-        # 學歷
-        candidate_dict.setdefault("edu_level","無")
-        candidate_dict.setdefault("edu_status","無")
-        candidate_dict.setdefault("edu_school","無")
-        candidate_dict.setdefault("edu_department","無")
+    # 最後要判斷哪些 key 不存在，不存在要給預設值，暫時根據提供的文件非必填值做參考 -> "學歷/工作經歷/語言專長/電腦專長"都可能為空
+    
+    # 學歷
+    candidate_dict.setdefault("edu_level","無")
+    candidate_dict.setdefault("edu_status","無")
+    candidate_dict.setdefault("edu_school","無")
+    candidate_dict.setdefault("edu_department","無")
 
-        # 工作年資
-        candidate_dict.setdefault("work_experiences",[
-            {
-                "title": "無",
-                "duration": "無"
-            }
-        ])
-        
-        # 工作經歷
-        candidate_dict.setdefault("work_experience_list",[
-            {
-                "title": "無",
-                "duration": "無",
-                "location": "無",
-                "date": "無"
-            }
-        ])
-        
-        # 語言專長
-        candidate_dict.setdefault("languages",[
-            {
-                "language": "無",
-                "listen": "無",
-                "speak": "無",
-                "read": "無",
-                "write": "無"
-            }
-        ])
-        
-        # 電腦專長
-        candidate_dict.setdefault("computer_expertise",["無"])
+    # 工作年資
+    candidate_dict.setdefault("work_experiences",[
+        {
+            "title": "無",
+            "duration": "無"
+        }
+    ])
+    
+    # 工作經歷
+    candidate_dict.setdefault("work_experience_list",[
+        {
+            "title": "無",
+            "duration": "無",
+            "location": "無",
+            "date": "無"
+        }
+    ])
+    
+    # 語言專長
+    candidate_dict.setdefault("languages",[
+        {
+            "language": "無",
+            "listen": "無",
+            "speak": "無",
+            "read": "無",
+            "write": "無"
+        }
+    ])
+    
+    # 電腦專長
+    candidate_dict.setdefault("computer_expertise",["無"])
 
-        return candidate_dict
+    return candidate_dict

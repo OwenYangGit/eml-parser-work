@@ -49,7 +49,7 @@ def eml_processor_func(event, context):
         sys.exit(0)
 
     # 宣告輸出檔名 - 以 年月日-時分秒.json 格式輸出
-    dest_file = datetime.fromisoformat(event["updated"]).strftime("%Y%m%d-%H%M%S") + ".json"
+    dest_file = datetime.fromisoformat(event["updated"]).strftime("%Y%m%d-%H%M%S") + ".jsonl"
     
     # 下載 zip 檔，解壓縮至 /tmp/emls
     src_zipfile = bucket.blob(src_blob)
@@ -72,13 +72,29 @@ def eml_processor_func(event, context):
     dest_blob = bucket.blob(cloud_storage_dest + dest_file)
     dest_blob.upload_from_filename(tmp_output)
 
-    # 將 tmp_output 的 jsonl 檔案 insert 進 bigquery
+    # 設定 bigquery 相關設定
     dataset_ref = bigquery_client.dataset(bq_dataset)
     table_ref = dataset_ref.table(bq_table)
     bq_job_config = bigquery.LoadJobConfig()
     bq_job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
+    
+    # 載入 bigquery 需要的資料結構、建 view 的 query
+    from schema import schema
+    bq_job_config.schema = schema.bq_schema
+    
+    # 讀取 tmp_output 的 jsonl 檔案，將 data insert 到 bigquery table，並等待資料 insert 完成。
+    with open(tmp_output, "rb") as source_file:
+        job = bigquery_client.load_table_from_file(
+            source_file,
+            table_ref,
+            job_config=bq_job_config,
+        )
+    job.result()
 
-
+    # 建立 view 表，並等待建立完成
+    bq_create_view = bigquery_client.query(schema.bq_view_query)
+    bq_create_view.result()
+    print("工作完成")
 
 
 # 本地測試
