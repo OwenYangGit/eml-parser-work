@@ -172,16 +172,16 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
                 candidate_dict["edu_department"] = edu_list[3].replace("(","").replace(")","")
             elif "職務類別" in e:
                 wanted_job_title_list = e.replace("，","").strip().split(" ")
-                candidate_dict["wanted_job_title"] = []
+                candidate_dict["wanted_job_titles"] = []
                 for i, title in enumerate(wanted_job_title_list):
                     if i >= 1:
-                        candidate_dict["wanted_job_title"].append(title)
+                        candidate_dict["wanted_job_titles"].append(title)
             elif "期望產業" in e:
                 wanted_job_type_list = e.replace("，","").strip().split(" ")
-                candidate_dict["wanted_job_type"] = []
+                candidate_dict["wanted_job_types"] = []
                 for i, job_type in enumerate(wanted_job_type_list):
                     if i >= 1:
-                        candidate_dict["wanted_job_type"].append(job_type)
+                        candidate_dict["wanted_job_types"].append(job_type)
             elif "上班地點" in e:
                 wanted_job_locations_list = e.replace("，","").strip().split(" ")
                 candidate_dict["wanted_job_locations"] = []
@@ -229,11 +229,11 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
                         }
                     )
             elif "電腦專長" in e:
-                candidate_dict["computer_expertise"] = []
+                candidate_dict["computer_expertises"] = []
                 computer_expertise_list = e.replace("、","").strip().split(" ")
                 computer_expertise_list.pop(0) # 去除第一個無用的 element
                 for i in computer_expertise_list:
-                    candidate_dict["computer_expertise"].append(i)
+                    candidate_dict["computer_expertises"].append(i)
             else:
                 work_experience_data.append(e.strip())
     except Exception as err:
@@ -263,6 +263,9 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
             print(err)
         
     # 最後要判斷哪些 key 不存在，不存在要給預設值，暫時根據提供的文件非必填值做參考 -> "學歷/工作經歷/語言專長/電腦專長"都可能為空
+
+    # 平台
+    candidate_dict.setdefault("platform","1111")
     
     # 學歷
     candidate_dict.setdefault("edu_level","無")
@@ -303,6 +306,6 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
     ])
     
     # 電腦專長
-    candidate_dict.setdefault("computer_expertise",["無"])
+    candidate_dict.setdefault("computer_expertises",["無"])
 
     return candidate_dict
