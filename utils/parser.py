@@ -2,7 +2,6 @@
 轉換 eml 檔成 json
 """
 from flanker import mime
-from bs4 import BeautifulSoup
 import re
 
 def eml_to_textpart(eml_path: str) -> str:
@@ -17,13 +16,16 @@ def eml_to_textpart(eml_path: str) -> str:
         :return 回傳整個 eml 內的 text/plain 部分，這個 str 會有 multi-line 的特性
 
     :流程
-        將 eml 讀取
+        將副檔名結尾為 .eml 檔案做讀取，非正規返回 "非合規的 EML" (避免接下來流程出錯)
         讀取 eml 的 part
         判斷為 text/plain part
         使用正則將所有的 space(空白) 取代成單一 space(空白)
         將多 empty lines 換成單一 empty line
         將 unicode \u3000(全形空白) 移除
     """
+    if not eml_path.endswith(".eml"):
+        print(eml_path + " 非合規的 EML 檔")
+        return "非合規的 EML 檔"
     with open(eml_path, "rb") as eml:
         raw_data = eml.read()
     email = mime.from_string(raw_data)
@@ -45,18 +47,19 @@ def textpart_split_by_candidate(multi_line_textpart: str) -> list:
         :return 返回拆分 eml 不同人選過後的人選清單
 
     :流程
-        先將多行的 str 以以 "最後修改" 關鍵字轉成 textpart_list
+        先將多行的 str 以 "最後修改" 關鍵字轉成 textpart_list
+        宣告一個 candidates 的 list
         遍歷這個 textpart_list , 將換行字符(\r\n)以 ',' 取代，並移除該字串最後 2 個 character(為了移除多的 ',')
-        一個人做為一筆字串 , 塞入一個 persons , 理論上 eml 裡面有幾個人 , 這個 persons 就有幾個 element
+        一個人做為一筆字串 , 塞入 persons 這個 list, 理論上 eml 裡面有幾個人 , 這個 persons 就有幾個 element
         移除 persons 的第一個 element(1111 固定的資料，無用)
         返回 persons
     """
     textpart_list = multi_line_textpart.split("最後修改")
-    persons = []
+    candidates = []
     for e in textpart_list:
-        persons.append(e.replace("\r\n",",")[:-2])
-    persons.pop(0)
-    return persons
+        candidates.append(e.replace("\r\n",",")[:-2])
+    candidates.pop(0)
+    return candidates
 
 def erase_messy_data_from_candidate_text(candidate_text: str) -> list:
     """將獨立一段 str 的 candidate str 傳入，透過判斷字段，將所需資料保留並存入 list 返回
