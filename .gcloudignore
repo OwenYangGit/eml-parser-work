@@ -21,3 +21,6 @@ get-dev-cred.json
 *.json
 *.eml
 *.zip
+demo*
+eml*
+*.sh

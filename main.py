@@ -49,7 +49,8 @@ def eml_processor_func(event, context):
         sys.exit(0)
 
     # 宣告輸出檔名 - 以 年月日-時分秒.json 格式輸出
-    dest_file = datetime.fromisoformat(event["updated"]).strftime("%Y%m%d-%H%M%S") + ".jsonl"
+    t = datetime.now()
+    dest_file = t.strftime("%Y%m%d-%H%M%S") + ".jsonl"
     
     # 下載 zip 檔，解壓縮至 /tmp/emls
     src_zipfile = bucket.blob(src_blob)
@@ -61,7 +62,7 @@ def eml_processor_func(event, context):
     tmp_output = "/tmp/" + dest_file
     with open(tmp_output,'a',encoding='utf-8') as fout:
         for eml in emls:
-            eml_textpart = parser.eml_to_textpart(eml)
+            eml_textpart = parser.eml_to_textpart("/tmp/emls/" + eml)
             eml_candidate_list = parser.textpart_split_by_candidate(eml_textpart)
             for candidate in eml_candidate_list:
                 candidate_dict = parser.candidate_dict_from_list(parser.erase_messy_data_from_candidate_text(candidate))
