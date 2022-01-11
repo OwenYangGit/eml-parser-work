@@ -169,7 +169,7 @@ def candidate_dict_from_list(candidate_list: list) -> dict:
                 candidate_dict["edu_level"] = edu_list[0][4:-2]
                 candidate_dict["edu_status"] = edu_list[0][-2:]
                 candidate_dict["edu_school"] = edu_list[1] + edu_list[2]
-                candidate_dict["edu_department"] = edu_list[3].replace("(","").replace(")","")
+                candidate_dict["edu_department"] = edu_list[-1].replace("(","").replace(")","")
             elif "職務類別" in e:
                 wanted_job_title_list = e.replace("，","").strip().split(" ")
                 candidate_dict["wanted_job_titles"] = []

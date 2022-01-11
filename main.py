@@ -113,7 +113,7 @@ def eml_processor_func(event, context):
 #             fout.write("\n")
 
 # from schema import schema
-# import os 
+# import os
 
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/workspaces/eml-parser-work/sa.json'
 
