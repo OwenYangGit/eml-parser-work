@@ -5,7 +5,7 @@ from datetime import datetime
 import sys , json
 
 def eml_processor_func(event, context):
-    
+
     """將人才資料檔案 eml 轉換成 jsonl 檔案存入 cloud storage 並且將對應 data 塞入 bigquery 且建立 view 表
 
     Args:
@@ -51,7 +51,7 @@ def eml_processor_func(event, context):
     # 宣告輸出檔名 - 以 年月日-時分秒.json 格式輸出
     t = datetime.now()
     dest_file = t.strftime("%Y%m%d-%H%M%S") + ".jsonl"
-    
+
     # 下載 zip 檔，解壓縮至 /tmp/emls
     src_zipfile = bucket.blob(src_blob)
     src_zipfile.download_to_filename("/tmp/source.zip")
@@ -78,11 +78,12 @@ def eml_processor_func(event, context):
     table_ref = dataset_ref.table(bq_table)
     bq_job_config = bigquery.LoadJobConfig()
     bq_job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
-    
+
     # 載入 bigquery 需要的資料結構、建 view 的 query
     from schema import schema
     bq_job_config.schema = schema.bq_schema
-    
+
+
     # 讀取 tmp_output 的 jsonl 檔案，將 data insert 到 bigquery table，並等待資料 insert 完成。
     with open(tmp_output, "rb") as source_file:
         job = bigquery_client.load_table_from_file(
@@ -96,45 +97,3 @@ def eml_processor_func(event, context):
     bq_create_view = bigquery_client.query(schema.bq_view_query)
     bq_create_view.result()
     print("工作完成")
-
-
-#本地測試
-
-# test_folder = "eml_output/"
-# eml_files = listdir("eml_output")
-
-# with open("myoutput.json", "a", encoding="utf-8") as fout:
-#     for eml in eml_files:
-#         a = parser.eml_to_textpart(test_folder + eml)
-#         b = parser.textpart_split_by_candidate(a)
-#         for i in b:
-#             d = parser.candidate_dict_from_list(parser.erase_messy_data_from_candidate_text(i))
-#             json.dump(d, fout, ensure_ascii=False)
-#             fout.write("\n")
-
-# from schema import schema
-# import os
-
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/workspaces/eml-parser-work/sa.json'
-
-# bq_dataset = "user_bi_ds"
-# bq_table = "user_bi_table"
-
-# client = bigquery.Client()
-# dataset_ref = client.dataset(bq_dataset)
-# table_ref = dataset_ref.table(bq_table)
-
-# job_config = bigquery.LoadJobConfig()
-# job_config.schema = schema.bq_schema
-# job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
-
-# with open("myoutput.json", "rb") as source_file:
-#     job = client.load_table_from_file(
-#         source_file,
-#         table_ref,
-#         job_config=job_config,
-#     )
-# job.result()
-
-# destination_table = client.get_table(bq_table)
-# print("Loaded {} rows.".format(destination_table.num_rows))
