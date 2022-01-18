@@ -62,10 +62,95 @@ def eml_processor_func(event, context):
     tmp_output = "/tmp/" + dest_file
     with open(tmp_output,'a',encoding='utf-8') as fout:
         for eml in emls:
+            # 解析 eml 轉成 str
             eml_textpart = parser.eml_to_textpart("/tmp/emls/" + eml)
+
+            # 將解析完的 str 轉成 list，並依照 candidate 切分
             eml_candidate_list = parser.textpart_split_by_candidate(eml_textpart)
+
+            # 處理每個 candidate，定義 candidate 欄位，使其最後的格式可以寫入 jsonl
             for candidate in eml_candidate_list:
-                candidate_dict = parser.candidate_dict_from_list(parser.erase_messy_data_from_candidate_text(candidate))
+                candidate_dict = {}
+                candidate_list = parser.erase_messy_data_from_candidate_text(candidate)
+                candidate_dict["id"] = parser.get_candidate_id(candidate_list)
+                candidate_dict["name"] = parser.get_candidate_name(candidate_list)
+                candidate_dict["gender"] = parser.get_candidate_gender(candidate_list)
+                candidate_dict["age"] = parser.get_candidate_age(candidate_list)
+                candidate_dict["cell_phone"] = parser.get_candidate_cellphone(candidate_list)
+                candidate_dict["email"] = parser.get_candidate_email(candidate_list)
+                candidate_dict["address"] = parser.get_candidate_address(candidate_list)
+                edu = parser.get_candidate_edu(candidate_list)
+                if edu:
+                    candidate_dict["edu_level"] = edu["edu_level"]
+                    candidate_dict["edu_status"] = edu["edu_status"]
+                    candidate_dict["edu_school"] = edu["edu_school"]
+                    candidate_dict["edu_department"] = edu["edu_department"]
+                candidate_dict["wanted_job_titles"] = parser.get_candidate_wanted_job_titles(candidate_list)
+                candidate_dict["wanted_job_types"] = parser.get_candidate_wanted_job_types(candidate_list)
+                candidate_dict["wanted_job_locations"] = parser.get_candidate_wanted_job_locations(candidate_list)
+                candidate_dict["working_months"] = parser.get_candidate_working_months(candidate_list)
+                candidate_dict["work_experiences"] = parser.get_candidate_work_experiences(candidate_list)
+                candidate_dict["languages"] = parser.get_candidate_languages(candidate_list)
+                candidate_dict["computer_expertises"] = parser.get_candidate_computer_expertises(candidate_list)
+                candidate_dict["work_experience_list"] = parser.get_candidate_work_experience_list(candidate_list)
+
+                #if candidate_dict["computer_expertises"] == None or candidate_dict["computer_expertises"] == []:
+                #    print(candidate)
+
+                # 最後要判斷哪些 key 不存在，不存在要給預設值，暫時根據提供的文件非必填值做參考 -> "學歷/工作經歷/語言專長/電腦專長"都可能為空，電話號碼可能不是手機
+                # 平台
+                candidate_dict.setdefault("platform","1111")
+
+                # 手機
+                if not candidate_dict["cell_phone"]:
+                    candidate_dict["cell_phone"] = "無"
+
+                # 學歷
+                candidate_dict.setdefault("edu_level","無")
+                candidate_dict.setdefault("edu_status","無")
+                candidate_dict.setdefault("edu_school","無")
+                candidate_dict.setdefault("edu_department","無")
+
+                # 工作月數
+                candidate_dict.setdefault("working_months",999)
+
+                # 工作年資
+                if not candidate_dict["work_experiences"] or candidate_dict["work_experiences"] == []:
+                    candidate_dict["work_experiences"] = [
+                        {
+                            "title": "無",
+                            "duration": "無"
+                        }
+                    ]
+                
+                # 工作經歷
+                if not candidate_dict["work_experience_list"] or candidate_dict["work_experience_list"] == []:
+                    candidate_dict["work_experience_list"] = [
+                        {
+                            "title": "無",
+                            "duration": "無",
+                            "location": "無",
+                            "date": "無"
+                        }
+                    ]
+                
+                # 語言專長
+                if not candidate_dict["languages"] or candidate_dict["languages"] == []:
+                    candidate_dict["languages"] = [
+                        {
+                            "language": "無",
+                            "listen": "無",
+                            "speak": "無",
+                            "read": "無",
+                            "write": "無"
+                        }
+                    ]
+                
+                # 電腦專長
+                if not candidate_dict["computer_expertises"] or candidate_dict["computer_expertises"] == []:
+                    candidate_dict["computer_expertises"] = ["無"]
+
+                # 將整理好的單個 candidate 寫入 jsonl
                 json.dump(candidate_dict, fout , ensure_ascii=False)
                 fout.write("\n")
 
